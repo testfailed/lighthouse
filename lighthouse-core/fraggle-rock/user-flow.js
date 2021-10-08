@@ -54,11 +54,11 @@ class UserFlow {
   }
 
   /**
-   * @param {string} url
+   * @param {LH.NavigationRequestor} requestor
    * @param {StepOptions=} stepOptions
    */
-  _getNextNavigationOptions(url, stepOptions) {
-    const options = {url, ...this.options, ...stepOptions};
+  _getNextNavigationOptions(requestor, stepOptions) {
+    const options = {requestor, ...this.options, ...stepOptions};
 
     // On repeat navigations, we want to disable storage reset by default (i.e. it's not a cold load).
     const isSubsequentNavigation = this.steps.some(step => step.lhr.gatherMode === 'navigation');
@@ -77,13 +77,13 @@ class UserFlow {
   }
 
   /**
-   * @param {string} url
+   * @param {LH.NavigationRequestor} requestor
    * @param {StepOptions=} stepOptions
    */
-  async navigate(url, stepOptions) {
+  async navigate(requestor, stepOptions) {
     if (this.currentTimespan) throw Error('Timespan already in progress');
 
-    const result = await navigation(this._getNextNavigationOptions(url, stepOptions));
+    const result = await navigation(this._getNextNavigationOptions(requestor, stepOptions));
     if (!result) throw Error('Navigation returned undefined');
 
     const providedName = stepOptions && stepOptions.stepName;

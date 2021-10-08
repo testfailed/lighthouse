@@ -28,7 +28,7 @@ const LHError = require('./lib/lh-error.js');
 class Runner {
   /**
    * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
-   * @param {(runnerData: {requestedUrl: string, config: TConfig, driverMock?: Driver}) => Promise<LH.Artifacts>} gatherFn
+   * @param {(runnerData: {requestedUrl?: string, config: TConfig, driverMock?: Driver}) => Promise<LH.Artifacts>} gatherFn
    * @param {{config: TConfig, computedCache: Map<string, ArbitraryEqualityMap>, url?: string, driverMock?: Driver}} runOpts
    * @return {Promise<LH.RunnerResult|undefined>}
    */
@@ -77,7 +77,7 @@ class Runner {
           // Use canonicalized URL (with trailing slashes and such)
           requestedUrl = new URL(runOpts.url).href;
         } else {
-          throw new LHError(LHError.errors.INVALID_URL);
+          // throw new LHError(LHError.errors.INVALID_URL);
         }
 
         artifacts = await gatherFn({
@@ -142,7 +142,7 @@ class Runner {
         },
         lighthouseVersion,
         fetchTime: artifacts.fetchTime,
-        requestedUrl: requestedUrl,
+        requestedUrl: artifacts.URL.requestedUrl,
         finalUrl: artifacts.URL.finalUrl,
         runWarnings: lighthouseRunWarnings,
         runtimeError: Runner.getArtifactRuntimeError(artifacts),

@@ -78,12 +78,14 @@ function resolveWaitForFullyLoadedOptions(options) {
  * navigations.
  *
  * @param {LH.Gatherer.FRTransitionalDriver} driver
- * @param {string} url
+ * @param {LH.NavigationRequestor} requestor
  * @param {NavigationOptions} options
- * @return {Promise<{finalUrl: string, warnings: Array<LH.IcuMessage>}>}
+ * @return {Promise<{requestedUrl: string, finalUrl: string, warnings: Array<LH.IcuMessage>}>}
  */
-async function gotoURL(driver, url, options) {
-  const status = {msg: `Navigating to ${url}`, id: 'lh:driver:navigate'};
+async function gotoURL(driver, requestor, options) {
+  const status = typeof requestor === 'string' ?
+    {msg: `Navigating to ${requestor}`, id: 'lh:driver:navigate'} :
+    {msg: 'Navigating using a user defined function', id: 'lh:driver:navigate'};
   log.time(status);
 
   const session = driver.defaultSession;
@@ -96,7 +98,12 @@ async function gotoURL(driver, url, options) {
 
   // No timeout needed for Page.navigate. See https://github.com/GoogleChrome/lighthouse/pull/6413
   session.setNextProtocolTimeout(Infinity);
-  const waitforPageNavigateCmd = session.sendCommand('Page.navigate', {url});
+  let waitForPageNavigateCmd;
+  if (typeof requestor === 'string') {
+    waitForPageNavigateCmd = session.sendCommand('Page.navigate', {url: requestor});
+  } else {
+    waitForPageNavigateCmd = requestor();
+  }
 
   const waitForNavigated = options.waitUntil.includes('navigated');
   const waitForLoad = options.waitUntil.includes('load');
@@ -119,10 +126,13 @@ async function gotoURL(driver, url, options) {
 
   const waitConditions = await Promise.all(waitConditionPromises);
   const timedOut = waitConditions.some(condition => condition.timedOut);
-  const finalUrl = (await networkMonitor.getFinalNavigationUrl()) || url;
+  const navigationUrls = await networkMonitor.getNavigationUrls();
+  const requestedUrl = typeof requestor === 'string' ? requestor : navigationUrls.requestedUrl;
+  if (!requestedUrl) throw Error('No navigations detected when running user defined requestor.');
+  const finalUrl = navigationUrls.finalUrl || requestedUrl;
 
   // Bring `Page.navigate` errors back into the promise chain. See https://github.com/GoogleChrome/lighthouse/pull/6739.
-  await waitforPageNavigateCmd;
+  await waitForPageNavigateCmd;
   await networkMonitor.disable();
 
   if (options.debugNavigation) {
@@ -131,8 +141,9 @@ async function gotoURL(driver, url, options) {
 
   log.timeEnd(status);
   return {
+    requestedUrl,
     finalUrl,
-    warnings: getNavigationWarnings({timedOut, finalUrl, requestedUrl: url}),
+    warnings: getNavigationWarnings({timedOut, finalUrl, requestedUrl}),
   };
 }
 

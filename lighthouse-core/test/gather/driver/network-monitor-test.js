@@ -159,7 +159,7 @@ describe('NetworkMonitor', () => {
 
   describe('.getFinalNavigationUrl()', () => {
     it('should handle the empty case', async () => {
-      expect(await monitor.getFinalNavigationUrl()).toBe(undefined);
+      expect(await monitor.getNavigationUrls()).toBe(undefined);
     });
 
     it('should return the last navigation', async () => {
@@ -172,7 +172,7 @@ describe('NetworkMonitor', () => {
       sessionMock.dispatch({method: 'Page.frameNavigated', params: {frame: {...frame, url: '2'}, type}}); // eslint-disable-line max-len
       sessionMock.dispatch({method: 'Page.frameNavigated', params: {frame, type}});
 
-      expect(await monitor.getFinalNavigationUrl()).toEqual('https://page.example.com');
+      expect(await monitor.getNavigationUrls()).toEqual('https://page.example.com');
     });
 
     it('should ignore non-main-frame navigations', async () => {
@@ -185,7 +185,7 @@ describe('NetworkMonitor', () => {
       const iframe = /** @type {*} */ ({id: '2', url: 'https://iframe.example.com'});
       sessionMock.dispatch({method: 'Page.frameNavigated', params: {frame: iframe, type}});
 
-      expect(await monitor.getFinalNavigationUrl()).toEqual('https://page.example.com');
+      expect(await monitor.getNavigationUrls()).toEqual('https://page.example.com');
     });
   });
 

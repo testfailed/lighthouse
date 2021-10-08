@@ -22,18 +22,20 @@ import UserFlow from '../fraggle-rock/user-flow.js';
     const page = await browser.newPage();
     const flow = new UserFlow(page);
 
-    await flow.navigate('https://www.mikescerealshack.co');
+    await flow.navigate('https://www.paulirish.com/');
 
-    await flow.startTimespan({stepName: 'Search input'});
+    /* await flow.startTimespan({stepName: 'Search input'});
     await page.type('input', 'call of duty');
     const networkQuietPromise = page.waitForNavigation({waitUntil: ['networkidle0']});
     await page.click('button[type=submit]');
     await networkQuietPromise;
     await flow.endTimespan();
 
-    await flow.snapshot({stepName: 'Search results'});
+    await flow.snapshot({stepName: 'Search results'});*/
 
-    await flow.navigate('https://www.mikescerealshack.co/corrections');
+    await flow.navigate(async () => {
+      await page.select('.mobile-nav > select', 'https://www.paulirish.com/about/');
+    });
 
     const flowResult = flow.getFlowResult();
 

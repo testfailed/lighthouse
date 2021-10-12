@@ -57,13 +57,13 @@ async function waitForImagesToLoad(page) {
 
     await flow.navigate('https://www.mikescerealshack.co');
 
-    await flow.startTimespan({stepName: 'Search input'});
-    await page.type('input', 'call of duty');
-    const networkQuietPromise = page.waitForNavigation({waitUntil: ['networkidle0']});
-    await page.click('button[type=submit]');
-    await networkQuietPromise;
-    await waitForImagesToLoad(page);
-    await flow.endTimespan();
+    await flow.timespan(async () => {
+      await page.type('input', 'call of duty');
+      const networkQuietPromise = page.waitForNavigation({waitUntil: ['networkidle0']});
+      await page.click('button[type=submit]');
+      await networkQuietPromise;
+      await waitForImagesToLoad(page);
+    }, {stepName: 'Search input'});
 
     await flow.snapshot({stepName: 'Search results'});
 

@@ -13,7 +13,7 @@ const node = {};
 /* eslint-env jest */
 
 describe('SEO: Document has valid hreflang code', () => {
-  it('fails when the language code provided in hreflang via link element is invalid', () => {
+  it('fails when the language code provided in hreflang via link element is invalid', async () => {
     const artifacts = {
       LinkElements: [
         {rel: 'alternate', hreflang: 'xx1', hrefRaw: 'http://example.com/', source: 'headers', node},
@@ -24,12 +24,12 @@ describe('SEO: Document has valid hreflang code', () => {
       ],
     };
 
-    const {score, details} = HreflangAudit.audit(artifacts);
+    const {score, details} = await HreflangAudit.audit(artifacts);
     assert.equal(score, 0);
     assert.equal(details.items.length, 5);
   });
 
-  it('succeeds when the language code provided in hreflang via body is invalid', () => {
+  it('succeeds when the language code provided in hreflang via body is invalid', async () => {
     const hreflangValues = ['xx', 'XX-be', 'XX-be-Hans', '', '  es'];
 
     for (const hreflangValue of hreflangValues) {
@@ -44,12 +44,12 @@ describe('SEO: Document has valid hreflang code', () => {
         ],
       };
 
-      const {score} = HreflangAudit.audit(artifacts);
+      const {score} = await HreflangAudit.audit(artifacts);
       assert.equal(score, 1);
     }
   });
 
-  it('succeeds when language code provided via head/headers is valid', () => {
+  it('succeeds when language code provided via head/headers is valid', async () => {
     const hreflangValues = ['pl', 'nl-be', 'zh-Hans', 'x-default', 'FR-BE'];
 
     let inHead = false;
@@ -66,17 +66,18 @@ describe('SEO: Document has valid hreflang code', () => {
         ],
       };
 
-      const {score} = HreflangAudit.audit(artifacts);
+      const {score} = await HreflangAudit.audit(artifacts);
       assert.equal(score, 1);
       inHead = !inHead;
     }
   });
 
-  it('succeeds when there are no rel=alternate link elements nor headers', () => {
-    assert.equal(HreflangAudit.audit({LinkElements: []}).score, 1);
+  it('succeeds when there are no rel=alternate link elements nor headers', async () => {
+    const {score} = await HreflangAudit.audit({LinkElements: []});
+    assert.equal(score, 1);
   });
 
-  it('returns all failing items', () => {
+  it('returns all failing items', async () => {
     const artifacts = {
       LinkElements: [
         {rel: 'alternate', hreflang: 'xx1', hrefRaw: 'http://xx1.example.com/', source: 'headers', node},
@@ -86,12 +87,12 @@ describe('SEO: Document has valid hreflang code', () => {
       ],
     };
 
-    const {score, details} = HreflangAudit.audit(artifacts);
+    const {score, details} = await HreflangAudit.audit(artifacts);
     assert.equal(score, 0);
     assert.equal(details.items.length, 4);
   });
 
-  it('fails when the hreflang url is not fully-qualified', () => {
+  it('fails when the hreflang url is not fully-qualified', async () => {
     const artifacts = {
       LinkElements: [
         {rel: 'alternate', hreflang: 'es', hrefRaw: 'example.com', source: 'head', node},
@@ -99,12 +100,12 @@ describe('SEO: Document has valid hreflang code', () => {
       ],
     };
 
-    const {score, details} = HreflangAudit.audit(artifacts);
+    const {score, details} = await HreflangAudit.audit(artifacts);
     assert.equal(score, 0);
     assert.equal(details.items.length, 2);
   });
 
-  it('fails with an invalid language code and a href which is not fully-qualified', () => {
+  it('fails with an invalid language code and a href which is not fully-qualified', async () => {
     const artifacts = {
       LinkElements: [
         {rel: 'alternate', hreflang: ' es', hrefRaw: 'example.com', source: 'head', node},
@@ -112,11 +113,11 @@ describe('SEO: Document has valid hreflang code', () => {
       ],
     };
 
-    const {score} = HreflangAudit.audit(artifacts);
+    const {score} = await HreflangAudit.audit(artifacts);
     assert.equal(score, 0);
   });
 
-  it('outputs the reasons for which a hreflang failed', () => {
+  it('outputs the reasons for which a hreflang failed', async () => {
     const artifacts = {
       LinkElements: [
         {rel: 'alternate', hreflang: '@@', hrefRaw: 'example.com', source: 'head', node},
@@ -126,7 +127,7 @@ describe('SEO: Document has valid hreflang code', () => {
       ],
     };
 
-    const {details: {items}} = HreflangAudit.audit(artifacts);
+    const {details: {items}} = await HreflangAudit.audit(artifacts);
 
     assert.equal(items.length, 3);
     assert.equal(items[0].subItems.items.length, 2);

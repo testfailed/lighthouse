@@ -11,9 +11,7 @@
 
 const Audit = require('../audit.js');
 const i18n = require('../../lib/i18n/i18n.js');
-const axeLibSource = require('../../lib/axe.js').source;
 
-const VALID_LANGS = importValidLangs();
 const NO_LANGUAGE = 'x-default';
 
 const UIStrings = {
@@ -34,20 +32,6 @@ const UIStrings = {
 const str_ = i18n.createMessageInstanceIdFn(__filename, UIStrings);
 
 /**
- * Import list of valid languages from axe core.
- * This is a huge array of language codes that can be stored more efficiently if we will need to
- * shrink the bundle size.
- * @return {Array<string>}
- */
-function importValidLangs() {
-  // Define a window-ish object so axe will export to it.
-  const window = {getComputedStyle: () => {}};
-  eval(axeLibSource);
-  // @ts-expect-error
-  return window.axe.utils.validLangs();
-}
-
-/**
  * @param {string} href
  * @return {boolean}
  */
@@ -57,16 +41,17 @@ function isFullyQualified(href) {
 
 /**
  * @param {string} hreflang
+ * @param {(lang: string) => boolean} isValidLang From axe.
  * @return {boolean}
  */
-function isExpectedLanguageCode(hreflang) {
+function isExpectedLanguageCode(hreflang, isValidLang) {
   if (hreflang.toLowerCase() === NO_LANGUAGE) {
     return true;
   }
 
   // hreflang can consist of language-script-region, we are validating only language
   const [lang] = hreflang.split('-');
-  return VALID_LANGS.includes(lang.toLowerCase());
+  return isValidLang(lang.toLowerCase());
 }
 
 class Hreflang extends Audit {
@@ -86,9 +71,11 @@ class Hreflang extends Audit {
 
   /**
    * @param {LH.Artifacts} artifacts
-   * @return {LH.Audit.Product}
+   * @return {Promise<LH.Audit.Product>}
    */
-  static audit({LinkElements}) {
+  static async audit({LinkElements}) {
+    const isValidLang = (await import('../../../third-party/axe/valid-langs.js')).default;
+
     /** @type {InvalidHreflang[]} */
     const invalidHreflangs = [];
 
@@ -105,7 +92,7 @@ class Hreflang extends Audit {
       /** @type {Source} */
       let source;
 
-      if (!isExpectedLanguageCode(link.hreflang)) {
+      if (!isExpectedLanguageCode(link.hreflang, isValidLang)) {
         reasons.push(str_(UIStrings.unexpectedLanguage));
       }
 

@@ -18,9 +18,37 @@ async function startFlow(page, options) {
   return new UserFlow(page, options);
 }
 
+/**
+ * @param {Omit<Parameters<navigation>[0], 'requestor'>} options
+ * @return {Promise<{endNavigation: () => ReturnType<navigation>, waitForLoad: () => Promise<void>}>}
+ */
+async function startNavigation(options) {
+  /** @type {ReturnType<navigation>} */
+  let endPromise;
+  /** @type {Promise<[() => void, () => Promise<void>]>} */
+  const continuePromise = new Promise(resolveContinue => {
+    /** @type {LH.NavigationRequestor} */
+    const requestor = waitForLoad => {
+      return new Promise(continueNavigation => {
+        resolveContinue([continueNavigation, waitForLoad]);
+      });
+    };
+    endPromise = navigation({...options, requestor});
+  });
+  const [continueNavigation, waitForLoad] = await continuePromise;
+
+  function endNavigation() {
+    continueNavigation();
+    return endPromise;
+  }
+
+  return {endNavigation, waitForLoad};
+}
+
 module.exports = {
   snapshot,
   startTimespan,
   navigation,
+  startNavigation,
   startFlow,
 };

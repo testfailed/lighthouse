@@ -121,10 +121,7 @@ async function gotoURL(driver, requestor, options) {
     session.setNextProtocolTimeout(Infinity);
     waitForPageNavigateCmd = session.sendCommand('Page.navigate', {url: requestor});
   } else {
-    const waitForLoad = async () => {
-      await Promise.all(waitConditionPromises);
-    };
-    waitForPageNavigateCmd = requestor(waitForLoad);
+    waitForPageNavigateCmd = requestor();
   }
 
   const waitConditions = await Promise.all(waitConditionPromises);

@@ -26,7 +26,7 @@ import Treemap_ from './lhr/treemap';
 declare global {
   module LH {
     export type ArbitraryEqualityMap = ArbitraryEqualityMap_;
-    export type NavigationRequestor = string | ((waitForLoad: () => Promise<void>) => Promise<void>);
+    export type NavigationRequestor = string | (() => Promise<void>);
 
     // artifacts.d.ts
     export import Artifacts = Artifacts_.Artifacts;

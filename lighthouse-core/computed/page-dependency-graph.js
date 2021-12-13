@@ -388,20 +388,23 @@ class PageDependencyGraph {
     const networkNodeOutput = PageDependencyGraph.getNetworkNodeOutput(networkRecords);
     const cpuNodes = PageDependencyGraph.getCPUNodes(processedTrace);
 
+    // The root request is the earliest network request, using position in networkRecords array to break ties.
+    const rootRequest = networkRecords.reduce((min, r) => (r.startTime < min.startTime ? r : min));
+    const rootNode = networkNodeOutput.idToNodeMap.get(rootRequest.requestId);
     // The main document request is the earliest network request *of type document*.
     // This will be different from the root request when there are server redirects.
     const mainDocumentRequest = NetworkAnalyzer.findMainDocument(networkRecords);
     const mainDocumentNode = networkNodeOutput.idToNodeMap.get(mainDocumentRequest.requestId);
-    if (!mainDocumentNode) {
+
+    if (!rootNode || !mainDocumentNode) {
       // Should always be found.
-      throw new Error(`mainDocumentNode not found.`);
+      throw new Error(`${rootNode ? 'mainDocument' : 'root'}Node not found.`);
     }
 
-    // The root request is the earliest request in the main document redirect chain.
-    const rootRequest = mainDocumentNode.record.redirects && mainDocumentNode.record.redirects[0];
-    let rootNode = rootRequest && networkNodeOutput.idToNodeMap.get(rootRequest.requestId);
-    if (!rootNode) {
-      rootNode = mainDocumentNode;
+    if (mainDocumentNode !== rootNode &&
+        (!mainDocumentNode.record.redirects ||
+        !mainDocumentNode.record.redirects.includes(rootNode.record))) {
+      throw new Error('Root node was not in redirect chain of mainDocument');
     }
 
     PageDependencyGraph.linkNetworkNodes(rootNode, networkNodeOutput);

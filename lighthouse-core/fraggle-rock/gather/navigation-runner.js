@@ -27,6 +27,8 @@ const Trace = require('../../gather/gatherers/trace.js');
 const DevtoolsLog = require('../../gather/gatherers/devtools-log.js');
 const NetworkRecords = require('../../computed/network-records.js');
 
+/** @typedef {{skipAboutBlank?: boolean}} InternalOptions */
+
 /**
  * @typedef NavigationContext
  * @property {Driver} driver
@@ -35,17 +37,18 @@ const NetworkRecords = require('../../computed/network-records.js');
  * @property {LH.NavigationRequestor} requestor
  * @property {LH.FRBaseArtifacts} baseArtifacts
  * @property {Map<string, LH.ArbitraryEqualityMap>} computedCache
+ * @property {InternalOptions} [options]
  */
 
 /** @typedef {Omit<Parameters<typeof collectPhaseArtifacts>[0], 'phase'>} PhaseState */
 
 /**
- * @param {{driver: Driver, config: LH.Config.FRConfig, requestor: LH.NavigationRequestor}} args
+ * @param {{driver: Driver, config: LH.Config.FRConfig, requestor: LH.NavigationRequestor, options?: InternalOptions}} args
  * @return {Promise<{baseArtifacts: LH.FRBaseArtifacts}>}
  */
-async function _setup({driver, config, requestor}) {
+async function _setup({driver, config, requestor, options}) {
   await driver.connect();
-  if (typeof requestor === 'string') {
+  if (!options?.skipAboutBlank) {
     await gotoURL(driver, defaultNavigationConfig.blankPage, {waitUntil: ['navigated']});
   }
 
@@ -61,8 +64,8 @@ async function _setup({driver, config, requestor}) {
  * @param {NavigationContext} navigationContext
  * @return {Promise<{warnings: Array<LH.IcuMessage>}>}
  */
-async function _setupNavigation({requestor, driver, navigation, config}) {
-  if (typeof requestor === 'string') {
+async function _setupNavigation({requestor, driver, navigation, config, options}) {
+  if (!options?.skipAboutBlank) {
     await gotoURL(driver, navigation.blankPage, {...navigation, waitUntil: ['navigated']});
   }
   const {warnings} = await prepare.prepareTargetForIndividualNavigation(
@@ -227,10 +230,10 @@ async function _navigation(navigationContext) {
 }
 
 /**
- * @param {{driver: Driver, config: LH.Config.FRConfig, requestor: LH.NavigationRequestor; baseArtifacts: LH.FRBaseArtifacts, computedCache: NavigationContext['computedCache']}} args
+ * @param {{driver: Driver, config: LH.Config.FRConfig, requestor: LH.NavigationRequestor; baseArtifacts: LH.FRBaseArtifacts, computedCache: NavigationContext['computedCache'], options?: InternalOptions}} args
  * @return {Promise<{artifacts: Partial<LH.FRArtifacts & LH.FRBaseArtifacts>}>}
  */
-async function _navigations({driver, config, requestor, baseArtifacts, computedCache}) {
+async function _navigations({driver, config, requestor, baseArtifacts, computedCache, options}) {
   if (!config.navigations) throw new Error('No navigations configured');
 
   /** @type {Partial<LH.FRArtifacts & LH.FRBaseArtifacts>} */
@@ -246,6 +249,7 @@ async function _navigations({driver, config, requestor, baseArtifacts, computedC
       config,
       baseArtifacts,
       computedCache,
+      options,
     };
 
     let shouldHaltNavigations = false;
@@ -288,15 +292,14 @@ async function navigation(options) {
   const {requestor, page, configContext = {}} = options;
   const {config} = initializeConfig(options.config, {...configContext, gatherMode: 'navigation'});
   const computedCache = new Map();
+  const internalOptions = {
+    skipAboutBlank: configContext.skipAboutBlank,
+  };
 
   return Runner.run(
     async () => {
       const driver = new Driver(page);
-      const context = {
-        driver,
-        config,
-        requestor,
-      };
+      const context = {driver, config, requestor, options: internalOptions};
       const {baseArtifacts} = await _setup(context);
       const {artifacts} = await _navigations({...context, baseArtifacts, computedCache});
       await _cleanup(context);

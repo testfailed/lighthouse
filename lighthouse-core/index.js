@@ -46,8 +46,9 @@ async function lighthouse(url, flags = {}, configJSON, userConnection) {
   const connection = userConnection || new ChromeProtocol(flags.port, flags.hostname);
 
   // kick off a lighthouse run
-  /** @param {{requestedUrl: string}} runnerData */
+  /** @param {{requestedUrl?: string}} runnerData */
   const gatherFn = ({requestedUrl}) => {
+    if (!requestedUrl) throw new Error('URL must be specified in legacy mode');
     return Runner._gatherArtifactsFromBrowser(requestedUrl, options, connection);
   };
   return Runner.run(gatherFn, options);

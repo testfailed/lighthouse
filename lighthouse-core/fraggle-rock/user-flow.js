@@ -81,6 +81,8 @@ class UserFlow {
    * @param {StepOptions=} stepOptions
    */
   async navigate(requestor, stepOptions) {
+    if (this.currentTimespan) throw Error('Timespan already in progress');
+
     const result = await navigation(this._getNextNavigationOptions(requestor, stepOptions));
     if (!result) throw Error('Navigation returned undefined');
 
@@ -94,19 +96,28 @@ class UserFlow {
   }
 
   /**
-   * @param {() => Promise<void>} interactions
    * @param {StepOptions=} stepOptions
    */
-  async timespan(interactions, stepOptions) {
+  async startTimespan(stepOptions) {
+    if (this.currentTimespan) throw Error('Timespan already in progress');
+
     const options = {...this.options, ...stepOptions};
     const timespan = await startTimespan(options);
-    await interactions();
+    this.currentTimespan = {timespan, options};
+  }
+
+  async endTimespan() {
+    if (!this.currentTimespan) throw Error('No timespan in progress');
+
+    const {timespan, options} = this.currentTimespan;
     const result = await timespan.endTimespan();
+    this.currentTimespan = undefined;
     if (!result) throw Error('Timespan returned undefined');
 
+    const providedName = options && options.stepName;
     this.steps.push({
       lhr: result.lhr,
-      name: options.stepName || this._getDefaultStepName(result.lhr),
+      name: providedName || this._getDefaultStepName(result.lhr),
     });
 
     return result;
@@ -116,6 +127,8 @@ class UserFlow {
    * @param {StepOptions=} stepOptions
    */
   async snapshot(stepOptions) {
+    if (this.currentTimespan) throw Error('Timespan already in progress');
+
     const options = {...this.options, ...stepOptions};
     const result = await snapshot(options);
     if (!result) throw Error('Snapshot returned undefined');

@@ -96,6 +96,15 @@ async function gotoURL(driver, requestor, options) {
   await session.sendCommand('Page.enable');
   await session.sendCommand('Page.setLifecycleEventsEnabled', {enabled: true});
 
+  let waitForPageNavigateCmd;
+  if (typeof requestor === 'string') {
+    // No timeout needed for Page.navigate. See https://github.com/GoogleChrome/lighthouse/pull/6413
+    session.setNextProtocolTimeout(Infinity);
+    waitForPageNavigateCmd = session.sendCommand('Page.navigate', {url: requestor});
+  } else {
+    waitForPageNavigateCmd = requestor();
+  }
+
   const waitForNavigated = options.waitUntil.includes('navigated');
   const waitForLoad = options.waitUntil.includes('load');
   const waitForFcp = options.waitUntil.includes('fcp');
@@ -113,15 +122,6 @@ async function gotoURL(driver, requestor, options) {
     waitConditionPromises.push(waitForFullyLoaded(session, networkMonitor, waitOptions));
   } else if (waitForFcp) {
     throw new Error('Cannot wait for FCP without waiting for page load');
-  }
-
-  let waitForPageNavigateCmd;
-  if (typeof requestor === 'string') {
-    // No timeout needed for Page.navigate. See https://github.com/GoogleChrome/lighthouse/pull/6413
-    session.setNextProtocolTimeout(Infinity);
-    waitForPageNavigateCmd = session.sendCommand('Page.navigate', {url: requestor});
-  } else {
-    waitForPageNavigateCmd = requestor();
   }
 
   const waitConditions = await Promise.all(waitConditionPromises);

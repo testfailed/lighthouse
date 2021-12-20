@@ -112,6 +112,10 @@ export class ReportUIFeatures {
       });
     }
 
+    if (this._opts.getStandaloneReportHTML) {
+      this._dom.find('a[data-action="save-html"]', this._dom.rootEl).classList.remove('lh-hidden');
+    }
+
     // Fill in all i18n data.
     for (const node of this._dom.findAll('[data-i18n]', this._dom.rootEl)) {
       // These strings are guaranteed to (at least) have a default English string in Util.UIStrings,
@@ -151,10 +155,14 @@ export class ReportUIFeatures {
    * @return {string}
    */
   getReportHtml() {
+    if (!this._opts.getStandaloneReportHTML) {
+      throw new Error('`getStandaloneReportHTML` is not set');
+    }
+
     if (this._topbar) {
       this._topbar.resetUIState();
     }
-    return `<!doctype html><body style="margin: 0">${this._dom.rootEl.outerHTML}`;
+    return this._opts.getStandaloneReportHTML();
   }
 
   /**

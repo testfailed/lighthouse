@@ -150,6 +150,12 @@ export class ReportUIFeatures {
     return buttonEl;
   }
 
+  resetUIState() {
+    if (this._topbar) {
+      this._topbar.resetUIState();
+    }
+  }
+
   /**
    * Returns the html that recreates this report.
    * @return {string}
@@ -159,9 +165,7 @@ export class ReportUIFeatures {
       throw new Error('`getStandaloneReportHTML` is not set');
     }
 
-    if (this._topbar) {
-      this._topbar.resetUIState();
-    }
+    this.resetUIState();
     return this._opts.getStandaloneReportHTML();
   }
 

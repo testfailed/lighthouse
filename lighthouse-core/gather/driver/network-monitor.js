@@ -143,12 +143,10 @@ class NetworkMonitor {
     const mainFrameNavigations = frameNavigations.filter(frame => frame.id === mainFrameId);
     if (!mainFrameNavigations.length) log.warn('NetworkMonitor', 'No detected navigations');
 
-    const firstNavigation = mainFrameNavigations[0];
-    const requestedUrl = firstNavigation && firstNavigation.url;
-    const finalNavigation = mainFrameNavigations[mainFrameNavigations.length - 1];
-    const finalUrl = finalNavigation && finalNavigation.url;
-
-    return {requestedUrl, finalUrl};
+    return {
+      requestedUrl: mainFrameNavigations[0]?.url,
+      finalUrl: mainFrameNavigations[mainFrameNavigations.length - 1]?.url,
+    };
   }
 
   /**
@@ -176,7 +174,7 @@ class NetworkMonitor {
     if (!this._networkRecorder) return false;
     const requests = this._networkRecorder.getRawRecords();
     const rootFrameRequest = requests.find(r => r.resourceType === 'Document');
-    const rootFrameId = rootFrameRequest && rootFrameRequest.frameId;
+    const rootFrameId = rootFrameRequest?.frameId;
 
     return this._isActiveIdlePeriod(
       0,

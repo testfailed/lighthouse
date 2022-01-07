@@ -22,6 +22,7 @@ const {initializeConfig} = require('../config/config.js');
 const {getBaseArtifacts, finalizeArtifacts} = require('./base-artifacts.js');
 const format = require('../../../shared/localization/format.js');
 const LighthouseError = require('../../lib/lh-error.js');
+const URL = require('../../lib/url-shim.js');
 const {getPageLoadError} = require('../../lib/navigation-error.js');
 const Trace = require('../../gather/gatherers/trace.js');
 const DevtoolsLog = require('../../gather/gatherers/devtools-log.js');
@@ -136,11 +137,11 @@ async function _collectDebugData(navigationContext, phaseState) {
   await collectPhaseArtifacts({...phaseState, phase: 'getArtifact', artifactDefinitions});
   const getArtifactState = phaseState.artifactState.getArtifact;
 
-  const devtoolsLogArtifactId = devtoolsLogArtifactDefn && devtoolsLogArtifactDefn.id;
+  const devtoolsLogArtifactId = devtoolsLogArtifactDefn?.id;
   const devtoolsLog = devtoolsLogArtifactId && await getArtifactState[devtoolsLogArtifactId];
   const records = devtoolsLog && await NetworkRecords.request(devtoolsLog, navigationContext);
 
-  const traceArtifactId = traceArtifactDefn && traceArtifactDefn.id;
+  const traceArtifactId = traceArtifactDefn?.id;
   const trace = traceArtifactId && await getArtifactState[traceArtifactId];
 
   return {devtoolsLog, records, trace};
@@ -299,7 +300,12 @@ async function navigation(options) {
   return Runner.run(
     async () => {
       const driver = new Driver(page);
-      const context = {driver, config, requestor, options: internalOptions};
+      const context = {
+        driver,
+        config,
+        requestor: typeof requestor === 'string' ? URL.normalizeUrl(requestor) : requestor,
+        options: internalOptions,
+      };
       const {baseArtifacts} = await _setup(context);
       const {artifacts} = await _navigations({...context, baseArtifacts, computedCache});
       await _cleanup(context);
@@ -307,7 +313,6 @@ async function navigation(options) {
       return finalizeArtifacts(baseArtifacts, artifacts);
     },
     {
-      url: typeof requestor === 'string' ? requestor : undefined,
       config,
       computedCache: new Map(),
     }

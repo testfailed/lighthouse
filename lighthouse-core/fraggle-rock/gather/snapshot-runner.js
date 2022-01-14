@@ -26,7 +26,7 @@ async function snapshot(options) {
   const computedCache = new Map();
   const url = await options.page.url();
 
-  return Runner.run(
+  const gatherResult = await Runner.gatherPhase(
     async () => {
       const baseArtifacts = await getBaseArtifacts(config, driver, {gatherMode: 'snapshot'});
       baseArtifacts.URL.requestedUrl = url;
@@ -55,6 +55,7 @@ async function snapshot(options) {
       computedCache,
     }
   );
+  return Runner.auditPhase(gatherResult);
 }
 
 module.exports = {

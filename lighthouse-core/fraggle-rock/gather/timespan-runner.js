@@ -50,7 +50,7 @@ async function startTimespan(options) {
   return {
     async endTimespan() {
       const finalUrl = await options.page.url();
-      return Runner.run(
+      const gatherResult = await Runner.gatherPhase(
         async () => {
           baseArtifacts.URL.requestedUrl = requestedUrl;
           baseArtifacts.URL.finalUrl = finalUrl;
@@ -68,6 +68,7 @@ async function startTimespan(options) {
           computedCache,
         }
       );
+      return Runner.auditPhase(gatherResult);
     },
   };
 }

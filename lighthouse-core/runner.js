@@ -28,14 +28,14 @@ const {version: lighthouseVersion} = require('../package.json');
 class Runner {
   /**
    * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
-   * @param {(runnerData: {config: TConfig, driverMock?: Driver}) => Promise<LH.Artifacts>} gatherFn
-   * @param {{config: TConfig, computedCache: Map<string, ArbitraryEqualityMap>, driverMock?: Driver}} runOpts
+   * @param {LH.Gatherer.GatherResult<TConfig>} gatherResult
    * @return {Promise<LH.RunnerResult|undefined>}
    */
-  static async run(gatherFn, runOpts) {
-    const settings = runOpts.config.settings;
+  static async auditPhase(gatherResult) {
+    const {artifacts, config, computedCache} = gatherResult;
+    const settings = config.settings;
     try {
-      const runnerStatus = {msg: 'Runner setup', id: 'lh:runner:run'};
+      const runnerStatus = {msg: 'Audit phase', id: 'lh:runner:auditPhase'};
       log.time(runnerStatus, 'verbose');
 
       /**
@@ -44,24 +44,15 @@ class Runner {
        */
       const lighthouseRunWarnings = [];
 
-      const sentryContext = Sentry.getContext();
-      Sentry.captureBreadcrumb({
-        message: 'Run started',
-        category: 'lifecycle',
-        data: sentryContext?.extra,
-      });
-
-      const artifacts = await this.gatherAndManageArtifacts(gatherFn, runOpts);
-
       // Potentially quit early
       if (settings.gatherMode && !settings.auditMode) return;
 
       // Audit phase
-      if (!runOpts.config.audits) {
+      if (!config.audits) {
         throw new Error('No audits to evaluate.');
       }
-      const auditResultsById = await Runner._runAudits(settings, runOpts.config.audits, artifacts,
-          lighthouseRunWarnings, runOpts.computedCache);
+      const auditResultsById = await Runner._runAudits(settings, config.audits, artifacts,
+          lighthouseRunWarnings, computedCache);
 
       // LHR construction phase
       const resultsStatus = {msg: 'Generating results...', id: 'lh:runner:generate'};
@@ -82,8 +73,8 @@ class Runner {
 
       /** @type {Record<string, LH.RawIcu<LH.Result.Category>>} */
       let categories = {};
-      if (runOpts.config.categories) {
-        categories = ReportScoring.scoreAllCategories(runOpts.config.categories, auditResultsById);
+      if (config.categories) {
+        categories = ReportScoring.scoreAllCategories(config.categories, auditResultsById);
       }
 
       log.timeEnd(resultsStatus);
@@ -108,7 +99,7 @@ class Runner {
         audits: auditResultsById,
         configSettings: settings,
         categories,
-        categoryGroups: runOpts.config.groups || undefined,
+        categoryGroups: config.groups || undefined,
         stackPacks: stackPacks.getStackPacks(artifacts.Stacks),
         timing: this._getTiming(artifacts),
         i18n: {
@@ -134,12 +125,7 @@ class Runner {
 
       return {lhr, artifacts, report};
     } catch (err) {
-      // i18n LighthouseError strings.
-      if (err.friendlyMessage) {
-        err.friendlyMessage = format.getFormatted(err.friendlyMessage, settings.locale);
-      }
-      await Sentry.captureException(err, {level: 'fatal'});
-      throw err;
+      throw Runner.createRunnerError(err, settings);
     }
   }
 
@@ -150,38 +136,68 @@ class Runner {
    *
    * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
    * @param {(runnerData: {config: TConfig, driverMock?: Driver}) => Promise<LH.Artifacts>} gatherFn
-   * @param {{config: TConfig, driverMock?: Driver}} options
-   * @return {Promise<LH.Artifacts>}
+   * @param {{config: TConfig, driverMock?: Driver, computedCache: Map<string, ArbitraryEqualityMap>}} options
+   * @return {Promise<LH.Gatherer.GatherResult<TConfig>>}
    */
-  static async gatherAndManageArtifacts(gatherFn, options) {
+  static async gatherPhase(gatherFn, options) {
     const settings = options.config.settings;
 
     // Gather phase
     // Either load saved artifacts from disk or from the browser.
-    let artifacts;
-    if (settings.auditMode && !settings.gatherMode) {
-      // No browser required, just load the artifacts from disk.
-      const path = this._getDataSavePath(settings);
-      artifacts = assetSaver.loadArtifacts(path);
-      const requestedUrl = artifacts.URL.requestedUrl;
+    try {
+      const runnerStatus = {msg: 'Gather phase', id: 'lh:runner:gatherPhase'};
+      log.time(runnerStatus, 'verbose');
 
-      if (!requestedUrl) {
-        throw new Error('Cannot run audit mode on empty URL');
-      }
-    } else {
-      artifacts = await gatherFn({
-        config: options.config,
-        driverMock: options.driverMock,
+      const sentryContext = Sentry.getContext();
+      Sentry.captureBreadcrumb({
+        message: 'Run started',
+        category: 'lifecycle',
+        data: sentryContext?.extra,
       });
 
-      // -G means save these to disk (e.g. ./latest-run).
-      if (settings.gatherMode) {
+      /** @type {LH.Artifacts} */
+      let artifacts;
+      if (settings.auditMode && !settings.gatherMode) {
+        // No browser required, just load the artifacts from disk.
         const path = this._getDataSavePath(settings);
-        await assetSaver.saveArtifacts(artifacts, path);
-      }
-    }
+        artifacts = assetSaver.loadArtifacts(path);
+        const requestedUrl = artifacts.URL.requestedUrl;
 
-    return artifacts;
+        if (!requestedUrl) {
+          throw new Error('Cannot run audit mode on empty URL');
+        }
+      } else {
+        artifacts = await gatherFn({
+          config: options.config,
+          driverMock: options.driverMock,
+        });
+
+        // -G means save these to disk (e.g. ./latest-run).
+        if (settings.gatherMode) {
+          const path = this._getDataSavePath(settings);
+          await assetSaver.saveArtifacts(artifacts, path);
+        }
+      }
+
+      log.timeEnd(runnerStatus);
+
+      return {artifacts, config: options.config, computedCache: options.computedCache};
+    } catch (err) {
+      throw Runner.createRunnerError(err, settings);
+    }
+  }
+
+  /**
+   * @param {any} err
+   * @param {LH.Config.Settings} settings
+   */
+  static async createRunnerError(err, settings) {
+    // i18n LighthouseError strings.
+    if (err.friendlyMessage) {
+      err.friendlyMessage = format.getFormatted(err.friendlyMessage, settings.locale);
+    }
+    await Sentry.captureException(err, {level: 'fatal'});
+    return err;
   }
 
   /**

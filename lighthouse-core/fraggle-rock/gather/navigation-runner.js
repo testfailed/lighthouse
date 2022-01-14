@@ -287,7 +287,7 @@ async function navigation(options) {
     skipAboutBlank: configContext.skipAboutBlank,
   };
 
-  return Runner.run(
+  const gatherResult = await Runner.gatherPhase(
     async () => {
       const driver = new Driver(page);
       const requestedUrl = URL.normalizeUrl(url);
@@ -300,9 +300,10 @@ async function navigation(options) {
     },
     {
       config,
-      computedCache: new Map(),
+      computedCache,
     }
   );
+  return Runner.auditPhase(gatherResult);
 }
 
 module.exports = {

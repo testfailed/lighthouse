@@ -47,11 +47,12 @@ async function lighthouse(url, flags = {}, configJSON, userConnection) {
   const connection = userConnection || new ChromeProtocol(flags.port, flags.hostname);
 
   // kick off a lighthouse run
-  const gatherResult = await Runner.gatherPhase(() => {
+  const runner = new Runner(config, computedCache);
+  await runner.gatherPhase(() => {
     const requestedUrl = URL.normalizeUrl(url);
     return Runner._gatherArtifactsFromBrowser(requestedUrl, options, connection);
-  }, options);
-  return Runner.auditPhase(gatherResult);
+  });
+  return runner.auditPhase();
 }
 
 /**

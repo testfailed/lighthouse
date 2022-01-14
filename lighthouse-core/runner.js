@@ -25,14 +25,30 @@ const {version: lighthouseVersion} = require('../package.json');
 /** @typedef {import('./lib/arbitrary-equality-map.js')} ArbitraryEqualityMap */
 /** @typedef {LH.Config.Config} Config */
 
+/**
+ * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
+ */
 class Runner {
   /**
-   * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
-   * @param {LH.Gatherer.GatherResult<TConfig>} gatherResult
+   * @param {TConfig} config
+   * @param {Map<string, ArbitraryEqualityMap>=} computedCache
+   */
+  constructor(config, computedCache) {
+    /** @type {LH.Artifacts|undefined} */
+    this.artifacts = undefined;
+    /** @type {TConfig} */
+    this.config = config;
+    /** @type {Map<string, ArbitraryEqualityMap>} */
+    this.computedCache = computedCache || new Map();
+  }
+
+  /**
    * @return {Promise<LH.RunnerResult|undefined>}
    */
-  static async auditPhase(gatherResult) {
-    const {artifacts, config, computedCache} = gatherResult;
+  async auditPhase() {
+    const {artifacts, config, computedCache} = this;
+    if (!artifacts) throw new Error('Must run gather phase before audit phase');
+
     const settings = config.settings;
     try {
       const runnerStatus = {msg: 'Audit phase', id: 'lh:runner:auditPhase'};
@@ -101,7 +117,7 @@ class Runner {
         categories,
         categoryGroups: config.groups || undefined,
         stackPacks: stackPacks.getStackPacks(artifacts.Stacks),
-        timing: this._getTiming(artifacts),
+        timing: Runner._getTiming(artifacts),
         i18n: {
           rendererFormattedStrings: format.getRendererFormattedStrings(settings.locale),
           icuMessagePaths: {},
@@ -134,13 +150,12 @@ class Runner {
    * -G and -A will run partial lighthouse pipelines,
    * and -GA will run everything plus save artifacts and lhr to disk.
    *
-   * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
    * @param {(runnerData: {config: TConfig, driverMock?: Driver}) => Promise<LH.Artifacts>} gatherFn
-   * @param {{config: TConfig, driverMock?: Driver, computedCache: Map<string, ArbitraryEqualityMap>}} options
-   * @return {Promise<LH.Gatherer.GatherResult<TConfig>>}
+   * @param {{driverMock?: Driver}=} options
+   * @return {Promise<LH.Artifacts>}
    */
-  static async gatherPhase(gatherFn, options) {
-    const settings = options.config.settings;
+  async gatherPhase(gatherFn, options) {
+    const settings = this.config.settings;
 
     // Gather phase
     // Either load saved artifacts from disk or from the browser.
@@ -159,7 +174,7 @@ class Runner {
       let artifacts;
       if (settings.auditMode && !settings.gatherMode) {
         // No browser required, just load the artifacts from disk.
-        const path = this._getDataSavePath(settings);
+        const path = Runner._getDataSavePath(settings);
         artifacts = assetSaver.loadArtifacts(path);
         const requestedUrl = artifacts.URL.requestedUrl;
 
@@ -168,20 +183,21 @@ class Runner {
         }
       } else {
         artifacts = await gatherFn({
-          config: options.config,
-          driverMock: options.driverMock,
+          config: this.config,
+          driverMock: options?.driverMock,
         });
 
         // -G means save these to disk (e.g. ./latest-run).
         if (settings.gatherMode) {
-          const path = this._getDataSavePath(settings);
+          const path = Runner._getDataSavePath(settings);
           await assetSaver.saveArtifacts(artifacts, path);
         }
       }
 
       log.timeEnd(runnerStatus);
 
-      return {artifacts, config: options.config, computedCache: options.computedCache};
+      this.artifacts = artifacts;
+      return artifacts;
     } catch (err) {
       throw Runner.createRunnerError(err, settings);
     }

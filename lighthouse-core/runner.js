@@ -31,7 +31,7 @@ class Runner {
    * @param {LH.Gatherer.GatherResult<TConfig>} gatherResult
    * @return {Promise<LH.RunnerResult|undefined>}
    */
-  static async auditPhase(gatherResult) {
+  static async audit(gatherResult) {
     const {artifacts, config, computedCache} = gatherResult;
     const settings = config.settings;
     try {
@@ -139,7 +139,7 @@ class Runner {
    * @param {{config: TConfig, driverMock?: Driver, computedCache: Map<string, ArbitraryEqualityMap>}} options
    * @return {Promise<LH.Gatherer.GatherResult<TConfig>>}
    */
-  static async gatherPhase(gatherFn, options) {
+  static async gather(gatherFn, options) {
     const settings = options.config.settings;
 
     // Gather phase

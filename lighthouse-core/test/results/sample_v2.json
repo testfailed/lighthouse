@@ -6870,7 +6870,13 @@
       },
       {
         "startTime": 0,
-        "name": "lh:runner:run",
+        "name": "lh:runner:gather",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:runner:audit",
         "duration": 100,
         "entryType": "measure"
       },

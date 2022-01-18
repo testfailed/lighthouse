@@ -49,6 +49,13 @@ describe('Runner', () => {
   /** @type {jest.Mock} */
   let runAuditSpy;
 
+  beforeAll(() => {
+    Runner.run = async (gatherFn, opts) => {
+      const artifacts = await Runner.gather(gatherFn, opts);
+      return Runner.audit(artifacts, opts);
+    };
+  });
+
   beforeEach(() => {
     saveArtifactsSpy = jest.spyOn(assetSaver, 'saveArtifacts');
     saveLhrSpy = jest.spyOn(assetSaver, 'saveLhr').mockImplementation(() => {});

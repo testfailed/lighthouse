@@ -36,7 +36,7 @@ class Runner {
     const {config, computedCache} = options;
     const settings = config.settings;
     try {
-      const runnerStatus = {msg: 'Audit phase', id: 'lh:runner:auditPhase'};
+      const runnerStatus = {msg: 'Audit phase', id: 'lh:runner:audit'};
       log.time(runnerStatus, 'verbose');
 
       /**
@@ -146,7 +146,7 @@ class Runner {
     // Gather phase
     // Either load saved artifacts from disk or from the browser.
     try {
-      const runnerStatus = {msg: 'Gather phase', id: 'lh:runner:gatherPhase'};
+      const runnerStatus = {msg: 'Gather phase', id: 'lh:runner:gather'};
       log.time(runnerStatus, 'verbose');
 
       const sentryContext = Sentry.getContext();

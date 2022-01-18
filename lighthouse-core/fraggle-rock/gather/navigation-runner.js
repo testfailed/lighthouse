@@ -287,8 +287,7 @@ async function navigation(options) {
     skipAboutBlank: configContext.skipAboutBlank,
   };
 
-  const runner = new Runner(config, computedCache);
-  await runner.gatherPhase(
+  const gatherResult = await Runner.gatherPhase(
     async () => {
       const driver = new Driver(page);
       const requestedUrl = URL.normalizeUrl(url);
@@ -298,9 +297,13 @@ async function navigation(options) {
       await _cleanup(context);
 
       return finalizeArtifacts(baseArtifacts, artifacts);
+    },
+    {
+      config,
+      computedCache,
     }
   );
-  return runner.auditPhase();
+  return Runner.auditPhase(gatherResult);
 }
 
 module.exports = {

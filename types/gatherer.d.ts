@@ -121,12 +121,6 @@ declare module Gatherer {
 
   type FRGatherPhase = keyof Omit<Gatherer.FRGathererInstance, 'name'|'meta'>
 
-  interface GatherResult<TConfig extends LH.Config.Config | LH.Config.FRConfig> {
-    artifacts: Artifacts;
-    config: TConfig;
-    computedCache: Map<string, ArbitraryEqualityMap>;
-  }
-
   interface FRGathererInstance<TDependencies extends DependencyKey = DefaultDependenciesKey> {
     name: keyof GathererArtifacts; // temporary COMPAT measure until artifact config support is available
     meta: GathererMeta<TDependencies>;

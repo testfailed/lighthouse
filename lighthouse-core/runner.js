@@ -28,11 +28,12 @@ const {version: lighthouseVersion} = require('../package.json');
 class Runner {
   /**
    * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
-   * @param {LH.Gatherer.GatherResult<TConfig>} gatherResult
+   * @param {LH.Artifacts} artifacts
+   * @param {{config: TConfig, driverMock?: Driver, computedCache: Map<string, ArbitraryEqualityMap>}} options
    * @return {Promise<LH.RunnerResult|undefined>}
    */
-  static async audit(gatherResult) {
-    const {artifacts, config, computedCache} = gatherResult;
+  static async audit(artifacts, options) {
+    const {config, computedCache} = options;
     const settings = config.settings;
     try {
       const runnerStatus = {msg: 'Audit phase', id: 'lh:runner:auditPhase'};
@@ -137,7 +138,7 @@ class Runner {
    * @template {LH.Config.Config | LH.Config.FRConfig} TConfig
    * @param {(runnerData: {config: TConfig, driverMock?: Driver}) => Promise<LH.Artifacts>} gatherFn
    * @param {{config: TConfig, driverMock?: Driver, computedCache: Map<string, ArbitraryEqualityMap>}} options
-   * @return {Promise<LH.Gatherer.GatherResult<TConfig>>}
+   * @return {Promise<LH.Artifacts>}
    */
   static async gather(gatherFn, options) {
     const settings = options.config.settings;
@@ -181,7 +182,7 @@ class Runner {
 
       log.timeEnd(runnerStatus);
 
-      return {artifacts, config: options.config, computedCache: options.computedCache};
+      return artifacts;
     } catch (err) {
       throw Runner.createRunnerError(err, settings);
     }

@@ -287,7 +287,8 @@ async function navigation(options) {
     skipAboutBlank: configContext.skipAboutBlank,
   };
 
-  const gatherResult = await Runner.gather(
+  const runnerOptions = {config, computedCache};
+  const artifacts = await Runner.gather(
     async () => {
       const driver = new Driver(page);
       const requestedUrl = URL.normalizeUrl(url);
@@ -298,12 +299,9 @@ async function navigation(options) {
 
       return finalizeArtifacts(baseArtifacts, artifacts);
     },
-    {
-      config,
-      computedCache,
-    }
+    runnerOptions
   );
-  return Runner.audit(gatherResult);
+  return Runner.audit(artifacts, runnerOptions);
 }
 
 module.exports = {

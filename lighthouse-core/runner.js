@@ -126,7 +126,7 @@ class Runner {
 
       return {lhr, artifacts, report};
     } catch (err) {
-      throw Runner.createRunnerError(err, settings);
+      throw await Runner.createRunnerError(err, settings);
     }
   }
 
@@ -184,7 +184,7 @@ class Runner {
 
       return artifacts;
     } catch (err) {
-      throw Runner.createRunnerError(err, settings);
+      throw await Runner.createRunnerError(err, settings);
     }
   }
 
@@ -229,8 +229,11 @@ class Runner {
         entryType: entry.entryType,
       };
     }).sort((a, b) => a.startTime - b.startTime);
-    const runnerEntry = timingEntries.find(e => e.name === 'lh:runner:run');
-    return {entries: timingEntries, total: runnerEntry?.duration || 0};
+    const gatherEntry = timingEntries.find(e => e.name === 'lh:runner:gather');
+    const auditEntry = timingEntries.find(e => e.name === 'lh:runner:audit');
+    const gatherTiming = gatherEntry?.duration || 0;
+    const auditTiming = auditEntry?.duration || 0;
+    return {entries: timingEntries, total: gatherTiming + auditTiming};
   }
 
   /**

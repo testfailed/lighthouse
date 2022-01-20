@@ -48,7 +48,6 @@ class Runner {
       // Potentially quit early
       if (settings.gatherMode && !settings.auditMode) return;
 
-      // Audit phase
       if (!config.audits) {
         throw new Error('No audits to evaluate.');
       }
@@ -143,7 +142,6 @@ class Runner {
   static async gather(gatherFn, options) {
     const settings = options.config.settings;
 
-    // Gather phase
     // Either load saved artifacts from disk or from the browser.
     try {
       const runnerStatus = {msg: 'Gather phase', id: 'lh:runner:gather'};

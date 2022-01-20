@@ -35,6 +35,7 @@ class Runner {
   static async audit(artifacts, options) {
     const {config, computedCache} = options;
     const settings = config.settings;
+
     try {
       const runnerStatus = {msg: 'Audit phase', id: 'lh:runner:audit'};
       log.time(runnerStatus, 'verbose');
@@ -125,7 +126,7 @@ class Runner {
 
       return {lhr, artifacts, report};
     } catch (err) {
-      throw await Runner.createRunnerError(err, settings);
+      throw Runner.createRunnerError(err, settings);
     }
   }
 
@@ -182,7 +183,7 @@ class Runner {
 
       return artifacts;
     } catch (err) {
-      throw await Runner.createRunnerError(err, settings);
+      throw Runner.createRunnerError(err, settings);
     }
   }
 
@@ -190,12 +191,12 @@ class Runner {
    * @param {any} err
    * @param {LH.Config.Settings} settings
    */
-  static async createRunnerError(err, settings) {
+  static createRunnerError(err, settings) {
     // i18n LighthouseError strings.
     if (err.friendlyMessage) {
       err.friendlyMessage = format.getFormatted(err.friendlyMessage, settings.locale);
     }
-    await Sentry.captureException(err, {level: 'fatal'});
+    Sentry.captureException(err, {level: 'fatal'});
     return err;
   }
 

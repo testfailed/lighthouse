@@ -181,6 +181,10 @@ class Runner {
 
       log.timeEnd(runnerStatus);
 
+      // If `gather` is run multiple times before `audit`, the timing entries for each `gather` can pollute one another.
+      // Timing entries are stored in artifacts.Timing, so we can clear the timing entries here.
+      log.takeTimeEntries();
+
       return artifacts;
     } catch (err) {
       throw Runner.createRunnerError(err, settings);

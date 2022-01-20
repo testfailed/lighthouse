@@ -350,6 +350,34 @@ describe('Runner', () => {
       });
   });
 
+  it('finds correct timings for multiple gather/audit pairs run separately', async () => {
+    const config = new Config({
+      passes: [{
+        gatherers: ['viewport-dimensions'],
+      }],
+      audits: [
+        'content-width',
+      ],
+    });
+    const options1 = {config, driverMock, computedCache: new Map()};
+    const options2 = {config, driverMock, computedCache: new Map()};
+
+    const artifacts1 = await Runner.gather(createGatherFn('https://example.com'), options1);
+    const artifacts2 = await Runner.gather(createGatherFn('https://google.com'), options2);
+
+    const result1 = await Runner.audit(artifacts1, options1);
+    const result2 = await Runner.audit(artifacts2, options2);
+
+    // Ensure the timings of the first run do not pollute the timings of the second run.
+    const gatherTiming1 = result1.lhr.timing.entries.find(t => t.name === 'lh:runner:gather');
+    const gatherTiming2 = result2.lhr.timing.entries.find(t => t.name === 'lh:runner:gather');
+    expect(gatherTiming1.startTime).not.toEqual(gatherTiming2.startTime);
+
+    const auditTiming1 = result1.lhr.timing.entries.find(t => t.name === 'lh:runner:audit');
+    const auditTiming2 = result2.lhr.timing.entries.find(t => t.name === 'lh:runner:audit');
+    expect(auditTiming1.startTime).not.toEqual(auditTiming2.startTime);
+  });
+
   describe('Bad required artifact handling', () => {
     it('outputs an error audit result when trace required but not provided', () => {
       const config = new Config({

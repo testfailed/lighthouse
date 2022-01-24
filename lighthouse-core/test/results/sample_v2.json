@@ -6882,6 +6882,12 @@
       },
       {
         "startTime": 0,
+        "name": "lh:driver:navigate",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
         "name": "lh:gather:getVersion",
         "duration": 100,
         "entryType": "measure"
@@ -6900,6 +6906,12 @@
       },
       {
         "startTime": 0,
+        "name": "lh:prepare:navigationMode",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
         "name": "lh:gather:runPass-defaultPass",
         "duration": 100,
         "entryType": "measure"
@@ -6912,13 +6924,31 @@
       },
       {
         "startTime": 0,
+        "name": "lh:driver:navigate",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:prepare:navigation",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:storage:clearDataForOrigin",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
         "name": "lh:storage:clearBrowserCaches",
         "duration": 100,
         "entryType": "measure"
       },
       {
         "startTime": 0,
-        "name": "lh:gather:prepareNetworkForNavigation",
+        "name": "lh:gather:prepareThrottlingAndNetwork",
         "duration": 100,
         "entryType": "measure"
       },
@@ -6997,12 +7027,6 @@
       {
         "startTime": 0,
         "name": "lh:gather:beforePass:MainDocumentContent",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:beforePass:GatherContext",
         "duration": 100,
         "entryType": "measure"
       },
@@ -7116,6 +7140,12 @@
       },
       {
         "startTime": 0,
+        "name": "lh:driver:navigate",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
         "name": "lh:gather:pass",
         "duration": 100,
         "entryType": "measure"
@@ -7213,12 +7243,6 @@
       {
         "startTime": 0,
         "name": "lh:gather:afterPass:MainDocumentContent",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:afterPass:GatherContext",
         "duration": 100,
         "entryType": "measure"
       },
@@ -7368,7 +7392,19 @@
       },
       {
         "startTime": 0,
-        "name": "lh:gather:prepareNetworkForNavigation",
+        "name": "lh:driver:navigate",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:prepare:navigation",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:gather:prepareThrottlingAndNetwork",
         "duration": 100,
         "entryType": "measure"
       },
@@ -7393,6 +7429,12 @@
       {
         "startTime": 0,
         "name": "lh:gather:loadPage-offlinePass",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:driver:navigate",
         "duration": 100,
         "entryType": "measure"
       },
@@ -7428,79 +7470,13 @@
       },
       {
         "startTime": 0,
-        "name": "lh:gather:runPass-redirectPass",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:loadBlank",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:prepareNetworkForNavigation",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:beforePass",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:beforePass:HTTPRedirect",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:beginRecording",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:loadPage-redirectPass",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:pass",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:getDevtoolsLog",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:computed:NetworkRecords",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:afterPass",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
-        "name": "lh:gather:afterPass:HTTPRedirect",
-        "duration": 100,
-        "entryType": "measure"
-      },
-      {
-        "startTime": 0,
         "name": "lh:gather:disconnect",
+        "duration": 100,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 0,
+        "name": "lh:storage:clearDataForOrigin",
         "duration": 100,
         "entryType": "measure"
       },

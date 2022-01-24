@@ -172,6 +172,8 @@ class Runner {
           driverMock: options.driverMock,
         });
 
+        // Calling log.timeEnd here will retroactively update artifacts.Timing.
+        // Must end time here so this timing entry can be stored on saved artifacts.
         log.timeEnd(runnerStatus);
 
         // If `gather` is run multiple times before `audit`, the timing entries for each `gather` can pollute one another.

@@ -12407,8 +12407,7 @@
     "quirksModeIssue": [],
     "sameSiteCookieIssue": [],
     "sharedArrayBufferIssue": [],
-    "twaQualityEnforcement": [],
-    "wasmCrossOriginModuleSharingIssue": []
+    "twaQualityEnforcement": []
   },
   "SourceMaps": [],
   "FullPageScreenshot": {

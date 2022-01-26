@@ -440,7 +440,7 @@ class TreemapViewer {
       if (node.children) return;
 
       const depthOneNode = this.nodeToDepthOneNodeMap.get(node);
-      const bundleNode = depthOneNode && depthOneNode.children ? depthOneNode : undefined;
+      const bundleNode = depthOneNode?.children ? depthOneNode : undefined;
 
       let name;
       if (bundleNode) {
@@ -589,7 +589,8 @@ class TreemapViewer {
     ];
 
     if (bytes !== undefined && total !== undefined) {
-      const percentStr = TreemapUtil.i18n.formatPercent(bytes / total);
+      const percent = total === 0 ? 1 : bytes / total;
+      const percentStr = TreemapUtil.i18n.formatPercent(percent);
       let str = `${TreemapUtil.i18n.formatBytesWithBestUnit(bytes)} (${percentStr})`;
       // Only add label for bytes on the root node.
       if (node === this.currentTreemapRoot) {
@@ -758,7 +759,9 @@ class LighthouseTreemap {
     TreemapUtil.find('.treemap-placeholder').classList.add('hidden');
     TreemapUtil.find('main').classList.remove('hidden');
 
-    const i18n = new I18n(options.lhr.configSettings.locale, {
+    const locale = options.lhr.configSettings.locale;
+    document.documentElement.lang = locale;
+    const i18n = new I18n(locale, {
       // Set missing renderer strings to default (english) values.
       ...TreemapUtil.UIStrings,
       // `strings` is generated in build/build-treemap.js
@@ -800,7 +803,7 @@ class LighthouseTreemap {
     let lhr = null;
     if (json && typeof json === 'object') {
       for (const maybeLhr of [json, json.lhr, json.lighthouseResult]) {
-        if (maybeLhr && maybeLhr.audits && typeof maybeLhr.audits === 'object') {
+        if (maybeLhr?.audits && typeof maybeLhr.audits === 'object') {
           lhr = maybeLhr;
           break;
         }

@@ -74,7 +74,8 @@ const rawArgv = y
 
 // Augmenting yargs type with auto-camelCasing breaks in tsc@4.1.2 and @types/yargs@15.0.11,
 // so for now cast to add yarg's camelCase properties to type.
-const argv = /** @type {typeof rawArgv & CamelCasify<typeof rawArgv>} */ (rawArgv);
+const argv =
+  /** @type {Awaited<typeof rawArgv> & CamelCasify<Awaited<typeof rawArgv>>} */ (rawArgv);
 
 const reportExcludeRegex =
   argv.reportExclude !== 'none' ? new RegExp(argv.reportExclude, 'i') : null;
@@ -234,7 +235,7 @@ function aggregateResults(name) {
 
     if (argv.urlFilter && !lhr.requestedUrl.includes(argv.urlFilter)) continue;
 
-    const metrics = lhr.audits.metrics && lhr.audits.metrics.details ?
+    const metrics = lhr.audits.metrics?.details ?
     /** @type {!LH.Audit.Details.Table} */ (lhr.audits.metrics.details).items[0] :
       {};
     const allEntries = {
@@ -362,12 +363,12 @@ function compare() {
     const someResult = baseResult || otherResult;
     if (!someResult) throw new Error('impossible');
 
-    const mean = compareValues(baseResult && baseResult.mean, otherResult && otherResult.mean);
-    const stdev = compareValues(baseResult && baseResult.stdev, otherResult && otherResult.stdev);
+    const mean = compareValues(baseResult?.mean, otherResult?.mean);
+    const stdev = compareValues(baseResult?.stdev, otherResult?.stdev);
     // eslint-disable-next-line max-len
     const cv = compareValues(baseResult && parseFloat(baseResult.CV), otherResult && parseFloat(otherResult.CV));
-    const min = compareValues(baseResult && baseResult.min, otherResult && otherResult.min);
-    const max = compareValues(baseResult && baseResult.max, otherResult && otherResult.max);
+    const min = compareValues(baseResult?.min, otherResult?.min);
+    const max = compareValues(baseResult?.max, otherResult?.max);
 
     return {
       'key': someResult.key,

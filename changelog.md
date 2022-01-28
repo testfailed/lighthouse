@@ -1,25 +1,16 @@
-Thanks to our new contributors 👽🐷🐰🐯🐻! 
-Adam Read @adamread
- <a name="9.3.0"></a>
+<a name="9.3.0"></a>
 # 9.3.0 (2022-01-28)
 [Full Changelog](https://github.com/compare/v9.2.0...v9.3.0)
 
-~~ TODO: https://chromiumdash.appspot.com/schedule ~~
-We expect this release to ship in the DevTools of [Chrome XX](https://chromiumdash.appspot.com/schedule), and to PageSpeed Insights within 2 weeks.
-
-## Notable Changes
-~~ TODO: Move notable changes here ~~
-
+We expect this release to ship in the DevTools of [Chrome 100](https://chromiumdash.appspot.com/schedule), and to PageSpeed Insights within 2 weeks.
 
 ## Core
 
+* preload-lcp-image: enable audit ([#13599](https://github.com/GoogleChrome/lighthouse/pull/13599))
 * ensure good and average scores start exactly at control points ([#13559](https://github.com/GoogleChrome/lighthouse/pull/13559))
 * fr: don't throw on unknown --only-categories value ([#13499](https://github.com/GoogleChrome/lighthouse/pull/13499))
-* inspector-issue: remove wasmCrossOriginModuleSharingIssue ([#13595](https://github.com/GoogleChrome/lighthouse/pull/13595))
-* inspector-issues: add federatedAuthRequestIssue ([#13603](https://github.com/GoogleChrome/lighthouse/pull/13603))
-* inspector-issues: collect all issue types ([#13462](https://github.com/GoogleChrome/lighthouse/pull/13462))
+* inspector-issues: collect all issue types ([#13462](https://github.com/GoogleChrome/lighthouse/pull/13462), [#13603](https://github.com/GoogleChrome/lighthouse/pull/13603), [#13595](https://github.com/GoogleChrome/lighthouse/pull/13595))
 * object-alt: remove md syntax around "alt" ([#13517](https://github.com/GoogleChrome/lighthouse/pull/13517))
-* preload-lcp-image: enable audit ([#13599](https://github.com/GoogleChrome/lighthouse/pull/13599))
 * runner: asset manager helper ([#13519](https://github.com/GoogleChrome/lighthouse/pull/13519))
 
 ## CLI
@@ -33,13 +24,12 @@ We expect this release to ship in the DevTools of [Chrome XX](https://chromiumda
 
 ## Deps
 
+* update various runtime deps ([#13483](https://github.com/GoogleChrome/lighthouse/pull/13483))
+* update various devDeps ([#13485](https://github.com/GoogleChrome/lighthouse/pull/13485))
 * update robots-parser to latest ([#13554](https://github.com/GoogleChrome/lighthouse/pull/13554))
 * update transitive deps to quiet vulnerability alerts ([#13538](https://github.com/GoogleChrome/lighthouse/pull/13538))
-* update various devDeps ([#13485](https://github.com/GoogleChrome/lighthouse/pull/13485))
-* update various runtime deps ([#13483](https://github.com/GoogleChrome/lighthouse/pull/13483))
 * lighthouse-stack-packs: upgrade to 1.7.0 ([#13604](https://github.com/GoogleChrome/lighthouse/pull/13604))
-* snyk: update snyk snapshot ([#13598](https://github.com/GoogleChrome/lighthouse/pull/13598))
-* snyk: update snyk snapshot ([#13498](https://github.com/GoogleChrome/lighthouse/pull/13498))
+* snyk: update snyk snapshot ([#13498](https://github.com/GoogleChrome/lighthouse/pull/13498), [#13598](https://github.com/GoogleChrome/lighthouse/pull/13598))
 * yargs: upgrade to 17.3.1 ([#13590](https://github.com/GoogleChrome/lighthouse/pull/13590))
 * yargs-parser: upgrade to 21.0.0 ([#13597](https://github.com/GoogleChrome/lighthouse/pull/13597))
 
@@ -70,7 +60,7 @@ We expect this release to ship in the DevTools of [Chrome XX](https://chromiumda
 
 * add web.dev and other option to bug template ([#13537](https://github.com/GoogleChrome/lighthouse/pull/13537))
 * use codemod for optional chaining ([#13503](https://github.com/GoogleChrome/lighthouse/pull/13503))
-* fix build-smokehouse-bundle build ([#13500](https://github.com/GoogleChrome/lighthouse/pull/13500))
+* build: fix build-smokehouse-bundle build ([#13500](https://github.com/GoogleChrome/lighthouse/pull/13500))
 * build: remove empty devtools report resources ([#13601](https://github.com/GoogleChrome/lighthouse/pull/13601))
 * build: set correct exit code when build scripts fail ([#13459](https://github.com/GoogleChrome/lighthouse/pull/13459))
 * git3po: only install latest git3po if out of date ([#13515](https://github.com/GoogleChrome/lighthouse/pull/13515))
